@@ -1,14 +1,59 @@
-# Welcome to your CDK TypeScript project
+# Daily CloudFront+S3 HLS demo
 
-This is a blank project for CDK development with TypeScript.
+This project provides an example of the cloud infrastructure necessary
+for serving HLS live streams using CloudFront signatures to protect
+access.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Setup
+* `npm install -g typescript`
+* `npm install -g aws-cdk`
 
-## Useful commands
+## Instructions
 
-* `npm run build`   compile typescript to js
-* `npm run watch`   watch for changes and compile
-* `npm run test`    perform the jest unit tests
-* `cdk deploy`      deploy this stack to your default AWS account/region
-* `cdk diff`        compare deployed stack with current state
-* `cdk synth`       emits the synthesized CloudFormation template
+* `cdk bootstrap`
+* `openssl genrsa -out private_key.pem 2048`
+* `openssl rsa -pubout -in private_key.pem -out public_key.pem`
+* `cdk deploy --context dailySubdomain=[daily_subdomain]`
+
+The output of the `cdk deploy` command will include the names of the
+S3 bucket and the IAM role configured for Daily, as well as the DNS
+name of the CloudFront distribution.  You'll use these to configure
+your Daily domain and/or rooms for outputting HLS live streams and/or
+recordings.
+
+## Playing streams
+
+You can play streams in multiple ways:
+
+### Playing streams using the included player
+
+Visit `https://[cloudfront_domain_name]/index.html?prefix=[S3 object key prefix]&mtgSessionId=[your meeting session ID]`
+to play the stream using the included player.
+
+### Playing streams using another player
+
+You can use the URL `https://[cloudfront_domain_name]/play?prefix=[S3 object key prefix]&mtgSessionId=[your meeting session ID]`
+to play the stream in another player.  Using an external player is
+subject to browser security restrictions and may require some additional
+configuration:
+
+* The player will need to set the `withCredentials` [attribute](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/withCredentials)
+  to `true` on its XMLHTTPRequests
+* The player's origin will need to be allowed in the CORS policies configured
+  by this stack.  Edit the file `lib/daily-cloudfront-hls-example-stack.ts` and
+  include any additional origins necessary before deploying this stack.
+
+## CloudFront Signed Cookies
+
+This project includes an example [Lambda@Edge](https://aws.amazon.com/lambda/edge/)
+[function](signing-lambda/index.js) which demonstrates how to generate signed cookies
+which can be used to add a level of protection to the content published.  The Lambda
+function has been simplified for demo purposes, and should not be used as-is in
+production-grade deployments.  Known limitations include:
+
+* We deploy the CloudFront signature private key and key ID into a single region,
+  `us-east-1`, to keep the stack easy to deploy.  In a production environment, it would
+  be preferable to locate the private key and key ID in each region with a lambda, to
+  improve Lambda execution time, and eliminate the global dependency on `us-east-1`.
+* You should determine your own policy to apply to the content protection.  This
+  lambda uses a simple, permissive policy for demo purposes.
