@@ -38,7 +38,6 @@ exports.handler = async (event, context, callback) => {
 
     let resource = `https://${cfconfig.distributionDomainName}${prefix}/${mtgSessionId}/master.m3u8`; 
     let cookieDomain = cfconfig.distributionDomainName;
-    // let cookiePath = `${prefix}/${mtgSessionId}`; 
     let cookiePath = `/`; 
     let pathFilter = `https://${cfconfig.distributionDomainName}${prefix}/${mtgSessionId}/*`; 
     let startDateTime = Math.floor(Date.now() / 1000 - 60);
