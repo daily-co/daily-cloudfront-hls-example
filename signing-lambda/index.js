@@ -37,13 +37,27 @@ exports.handler = async (event, context, callback) => {
     }
   });
 
-  const prefix = queryDict["prefix"];
+  let prefix = queryDict["prefix"];
   const mtgSessionId = queryDict["mtgSessionId"];
 
-  let resource = `https://${cfconfig.distributionDomainName}/${prefix}/${mtgSessionId}/master.m3u8`;
+  if (!prefix || !mtgSessionId) {
+    const response = {
+      status: 404,
+      statusDescription: "Not Found"
+    }
+    callback(null, response);
+    return;
+  }
+
+  if (!prefix.startsWith("/")) {
+    prefix = `/${prefix}`;
+  }
+
+
+  let resource = `https://${cfconfig.distributionDomainName}${prefix}/${mtgSessionId}/master.m3u8`;
   let cookieDomain = cfconfig.distributionDomainName;
   let cookiePath = `/`;
-  let pathFilter = `https://${cfconfig.distributionDomainName}/${prefix}/${mtgSessionId}/*`;
+  let pathFilter = `https://${cfconfig.distributionDomainName}${prefix}/${mtgSessionId}/*`;
   let startDateTime = Math.floor(Date.now() / 1000 - 60);
   let expiration = Math.floor(Date.now() / 1000 + 3600 * 3);
   let customPolicy = {
