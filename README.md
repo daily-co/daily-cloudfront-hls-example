@@ -10,9 +10,9 @@ access.
 
 ## Instructions
 
-* `cdk bootstrap`
 * `openssl genrsa -out private_key.pem 2048`
 * `openssl rsa -pubout -in private_key.pem -out public_key.pem`
+* `cdk bootstrap`
 * `cdk deploy --context dailySubdomain=[daily_subdomain]`
 
 The output of the `cdk deploy` command will include the names of the
