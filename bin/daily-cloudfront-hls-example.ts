@@ -4,7 +4,13 @@ import * as cdk from 'aws-cdk-lib';
 import { DailyCloudfrontHlsExampleStack } from '../lib/daily-cloudfront-hls-example-stack';
 
 const app = new cdk.App();
-new DailyCloudfrontHlsExampleStack(app, 'DailyCloudfrontHlsExampleStack', {
+
+const subdomain = app.node.tryGetContext("dailySubdomain");
+if (subdomain === undefined || !(typeof(subdomain) === 'string') || subdomain.trim() === '') {
+  throw new Error("Must pass a '-c dailySubdomain=<daily_subdomain>' context parameter");
+}
+
+new DailyCloudfrontHlsExampleStack(app, `DailyCloudfrontHlsExampleStack-${subdomain}`, {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

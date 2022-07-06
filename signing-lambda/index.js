@@ -1,6 +1,13 @@
 const AWS = require("aws-sdk");
 const fs = require("fs");
 
+/*
+ * The CDK app performs variable substitution on this script using the template-file module
+ * https://www.npmjs.com/package/template-file
+ *
+ * Template variables are expressed in mustache-style, e.g. {{dailySubdomain}}
+ */
+
 AWS.config.update({ region: "us-east-1" });
 
 const secretsmanager = new AWS.SecretsManager();
@@ -11,12 +18,12 @@ let privateKey = null,
 
 async function init() {
   const secretResponse = await secretsmanager
-    .getSecretValue({ SecretId: "daily-cloudfront-hls-private-key" })
+    .getSecretValue({ SecretId: "daily-cloudfront-hls-{{dailySubdomain}}-private-key" })
     .promise();
   privateKey = secretResponse.SecretString;
 
   const paramResponse = await ssm
-    .getParameter({ Name: "/daily-cloudfront-hls-example/key-pair-id" })
+    .getParameter({ Name: "/daily-cloudfront-hls-example/{{dailySubdomain}}/key-pair-id" })
     .promise();
   keyId = paramResponse.Parameter.Value;
 }

@@ -16,6 +16,7 @@ import {
 import { Construct } from "constructs";
 import * as path from "path";
 import * as fs from "fs";
+import * as tf from "template-file";
 // import * as sqs from 'aws-cdk-lib/aws-sqs';
 
 export class DailyCloudfrontHlsExampleStack extends Stack {
@@ -90,7 +91,7 @@ export class DailyCloudfrontHlsExampleStack extends Stack {
       "signingKeyPairId",
       {
         stringValue: cloudfrontKey.publicKeyId,
-        parameterName: "/daily-cloudfront-hls-example/key-pair-id",
+        parameterName: `/daily-cloudfront-hls-example/${dailySubdomain}/key-pair-id`,
       }
     );
     const cloudfrontKeyGroup = new aws_cloudfront.KeyGroup(
@@ -106,7 +107,7 @@ export class DailyCloudfrontHlsExampleStack extends Stack {
       "privateKeySecret",
       {
         description: "Cookie signing key for CloudFront",
-        secretName: "daily-cloudfront-hls-private-key",
+        secretName: `daily-cloudfront-hls-${dailySubdomain}-private-key`,
         secretStringValue: SecretValue.unsafePlainText(private_key),
       }
     );
@@ -142,7 +143,7 @@ export class DailyCloudfrontHlsExampleStack extends Stack {
         runtime: aws_lambda.Runtime.NODEJS_14_X,
         handler: "index.handler",
         role: lambdaRole,
-        code: aws_lambda.Code.fromInline(lambda_code),
+        code: aws_lambda.Code.fromInline(tf.render(lambda_code, { dailySubdomain: dailySubdomain })),
       }
     );
 
@@ -237,25 +238,25 @@ export class DailyCloudfrontHlsExampleStack extends Stack {
     new CfnOutput(this, "bucketName", {
       value: hlsS3Bucket.bucketName,
       description: "Name of S3 bucket",
-      exportName: "bucketName",
+      exportName: `${dailySubdomain}-bucketName`,
     });
 
     new CfnOutput(this, "bucketRegion", {
       value: this.region,
       description: "Region where S3 bucket is located",
-      exportName: "bucketRegion",
+      exportName: `${dailySubdomain}-bucketRegion`,
     });
 
     new CfnOutput(this, "roleArn", {
       value: dailyRole.roleArn,
       description: "ARN of IAM role for Daily to assume",
-      exportName: "roleArn",
+      exportName: `${dailySubdomain}-roleArn`,
     });
 
     new CfnOutput(this, "cloudfrontDistDomain", {
       value: cloudfrontDist.domainName,
       description: "Domain name of CloudFront distribution",
-      exportName: "cloudfrontDistDomain",
+      exportName: `${dailySubdomain}-cloudfrontDistDomain`,
     });
   }
 }
