@@ -79,8 +79,8 @@ export class DailyCloudfrontHlsExampleStack extends Stack {
     });
 
     hlsS3Bucket.grantRead(oaid);
-    const public_key = fs.readFileSync("public_key.pem").toString();
-    const private_key = fs.readFileSync("private_key.pem").toString();
+    const public_key = fs.readFileSync(`public_key-${dailySubdomain}.pem`).toString();
+    const private_key = fs.readFileSync(`private_key-${dailySubdomain}.pem`).toString();
     const lambda_code = fs.readFileSync("signing-lambda/index.js").toString();
 
     const cloudfrontKey = new aws_cloudfront.PublicKey(this, "cloudfrontKey", {

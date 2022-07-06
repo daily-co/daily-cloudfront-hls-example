@@ -10,8 +10,8 @@ access.
 
 ## Instructions
 
-* `openssl genrsa -out private_key.pem 2048`
-* `openssl rsa -pubout -in private_key.pem -out public_key.pem`
+* `openssl genrsa -out private_key-[daily_subdomain].pem 2048`
+* `openssl rsa -pubout -in private_key-[daily_subdomain].pem -out public_key.pem`
 * `cdk bootstrap`
 * `cdk deploy --context dailySubdomain=[daily_subdomain]`
 
